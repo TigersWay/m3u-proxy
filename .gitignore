@@ -1,0 +1,11 @@
+# Windows
+desktop.ini
+folder.ico
+
+# (p)npm
+node_modules/
+shrinkwrap.yaml
+
+# Project
+imports/
+exports/

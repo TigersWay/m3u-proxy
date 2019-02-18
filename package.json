@@ -1,0 +1,29 @@
+{
+  "name": "m3u-proxy",
+  "description": "Download, process/simplify and serve M3U & EPG files from your IPTV provider(s)",
+  "keywords": [
+    "m3u",
+    "epg",
+    "xmltv"
+  ],
+  "version": "0.2.0",
+  "author": "Ben Michaud <ben@tigersway.net>",
+  "license": "MIT",
+  "main": "m3u-proxy.js",
+  "engines": {
+    "node": ">=10"
+  },
+  "dependencies": {
+    "debug": "^4.1.1",
+    "simple-get": "^3.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^5.14.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "nodemon": "^1.18.10"
+  }
+}

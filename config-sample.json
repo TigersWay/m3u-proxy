@@ -1,0 +1,14 @@
+[{
+  "name": "MyProvider",
+  "m3u": "http://url-of-my-stream-provider/streams.m3u",
+  "epg": "http://url-of-my-guide-provider/xmltv.xml",
+  "filters": [{
+    "field": "group-title",
+    "regex": "UK.*|USA.*"
+  }],
+  "transformations": [{
+    "field": "tvg-name",
+    "regex": "(.*?) *: *(.*)",
+    "substitution": "$1: $2"
+  }]
+}]
