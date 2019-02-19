@@ -4,7 +4,8 @@
   "keywords": [
     "m3u",
     "epg",
-    "xmltv"
+    "xmltv",
+    "nodejs"
   ],
   "version": "0.2.0",
   "author": "Ben Michaud <ben@tigersway.net>",
