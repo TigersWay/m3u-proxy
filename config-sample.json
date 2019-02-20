@@ -4,9 +4,14 @@
   "epg": "http://url-of-my-guide-provider/xmltv.xml",
   "filters": [{
     "field": "group-title",
-    "regex": "UK.*|USA.*"
+    "regex": "UK .*|USA .*"
   }],
   "transformations": [{
+    "field": "group-title",
+    "regex": "(UK|USA).*",
+    "substitution": "$1"
+
+  }, {
     "field": "tvg-name",
     "regex": "(.*?) *: *(.*)",
     "substitution": "$1: $2"

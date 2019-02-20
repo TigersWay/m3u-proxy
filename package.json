@@ -15,11 +15,12 @@
     "node": ">=10"
   },
   "dependencies": {
+    "byline": "^5.0.0",
     "debug": "^4.1.1",
     "simple-get": "^3.0.3"
   },
   "devDependencies": {
-    "eslint": "^5.14.0",
+    "eslint": "^5.14.1",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-node": "^8.0.1",
