@@ -17,7 +17,8 @@
   "dependencies": {
     "byline": "^5.0.0",
     "debug": "^4.1.1",
-    "simple-get": "^3.0.3"
+    "simple-get": "^3.0.3",
+    "xml-flow": "^1.0.2"
   },
   "devDependencies": {
     "eslint": "^5.14.1",

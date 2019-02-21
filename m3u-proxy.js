@@ -5,6 +5,7 @@ const path = require('path');
 
 const get = require('simple-get');
 const byline = require('byline');
+const flow = require('xml-flow');
 
 const debug = require('debug')('m3u-proxy');
 
@@ -25,7 +26,7 @@ const getFile = (url, filename) => {
       // pipe received data
       response.pipe(file);
       // and close
-      response.on('close', () => {
+      response.on('end', () => {
         if (fs.existsSync(filename)) fs.unlinkSync(filename);
         fs.renameSync(filename + '.tmp', filename);
         debug(`getFile: ${filename}`);
@@ -67,11 +68,11 @@ const processM3U = (source) => {
         // And stream URL
         fields.stream = line;
         // Now let's check filters
-        let valid = true;
+        let valid = false;
         if (source.filters) {
           for (let i = 0; i < source.filters.length; i++) {
-            if (!source.filters[i].regex.test(fields[source.filters[i].field])) {
-              valid = false;
+            if (source.filters[i].regex.test(fields[source.filters[i].field])) {
+              valid = true;
               break;
             }
           }
@@ -109,12 +110,42 @@ const exportM3U = (source, streams) => {
   });
 };
 
+const processEPG = (source, streams) => {
+  return new Promise((resolve, reject) => {
+    debug(`EPG-Process: ${source.name}`);
+    const xmlStream = flow(fs.createReadStream(`./imports/${source.name}.xml`));
+    const epg = fs.createWriteStream(`./exports/${source.name}.xml`);
+    //
+    epg.write('<?xml version="1.0" encoding="UTF-8"?>< !DOCTYPE tv SYSTEM "xmltv.dtd" ><tv>\n');
+    xmlStream.on('tag:channel', (node) => {
+      if (streams.indexOf(node.$attrs.id) >= 0) {
+        epg.write(flow.toXml(node));
+        epg.write('\n');
+      }
+    });
+    xmlStream.on('tag:programme', (node) => {
+      if (streams.indexOf(node.$attrs.channel) >= 0) {
+        epg.write(flow.toXml(node));
+        epg.write('\n');
+      }
+    });
+    xmlStream.on('end', () => {
+      epg.write('</tv>');
+      debug(`EPG-Process: ${source.name}`);
+      resolve();
+    });
+  });
+};
+
 const processSource = async (source) => {
   debug(`Source: ${source.name}`);
 
   await getFile(source.m3u, `./imports/${source.name}.m3u`);
   let streams = await processM3U(source);
   await exportM3U(source, streams);
+
+  await getFile(source.epg, `./imports/${source.name}.xml`);
+  await processEPG(source, streams.map(x => x['tvg-id']));
 
   debug(`Source: ${source.name}`);
 };

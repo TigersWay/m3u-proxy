@@ -27,10 +27,13 @@ Download, process/simplify and serve M3U &amp; EPG files from your IPTV provider
 ]
 ```
 ### name
+Filename without extension, downloadable files would then be <name>.m3u & <name>.xml
 
 ### m3u
+Original url for the M3U file
 
 ### epg
+Original url the the guide/xmltv file
 
 ### filters
 
