@@ -9,6 +9,8 @@ const flow = require('xml-flow');
 
 const debug = require('debug')('m3u-proxy');
 
+const config = require('./config.json');
+
 
 const getFile = (url, filename) => {
   debug(`getFile: ${filename}`);
@@ -51,7 +53,7 @@ const processM3U = (source) => {
       for (let i = 0; i < source.transformations.length; i++) source.transformations[i].regex = new RegExp(source.transformations[i].regex, 'i');
     }
     // Loop
-    const stream = byline.createStream(fs.createReadStream(`./imports/${source.name}.m3u`, { encoding: 'utf8' }));
+    const stream = byline.createStream(fs.createReadStream(`${config.importFolder}/${source.name}.m3u`, { encoding: 'utf8' }));
     const streams = [];
     let fields = {};
     stream.on('data', (line) => {
@@ -64,12 +66,16 @@ const processM3U = (source) => {
         for (let i = 1; i < 8; i += 2) {
           if (matches[i]) fields[matches[i]] = matches[i + 1];
         }
+        if (!fields['tvg-name']) fields['tvg-name'] = matches[11].trim();
       } else {
         // And stream URL
         fields.stream = line;
         // Now let's check filters
-        let valid = false;
-        if (source.filters) {
+        let valid;
+        if (!source.filters) {
+          valid = true;
+        } else {
+          valid = false;
           for (let i = 0; i < source.filters.length; i++) {
             if (source.filters[i].regex.test(fields[source.filters[i].field])) {
               valid = true;
@@ -98,10 +104,14 @@ const exportM3U = (source, streams) => {
   return new Promise((resolve, reject) => {
     debug(`M3U-Write: ${source.name}`);
     if (!fs.existsSync('exports')) fs.mkdirSync('exports');
-    const file = fs.createWriteStream(`./exports/${source.name}.m3u`);
+    const file = fs.createWriteStream(`${config.exportFolder}/${source.name}.m3u`);
     file.write('#EXTM3U\n');
     streams.forEach(stream => {
-      file.write(`#EXTINF:-1 tvg-id="${stream['tvg-id']}" tvg-name="${stream['tvg-name']}" tvg-logo="${stream['tvg-logo']}" group-title="${stream['group-title']}",${stream['tvg-name']}\n`);
+      file.write(`#EXTINF:-1`);
+      if (stream['tvg-id']) file.write(` tvg-id="${stream['tvg-id']}"`);
+      if (stream['tvg-name']) file.write(` tvg-name="${stream['tvg-name']}"`);
+      if (stream['tvg-logo']) file.write(` tvg-logo="${stream['tvg-logo']}"`);
+      file.write(` group-title="${stream['group-title']}",${stream['tvg-name']}\n`);
       file.write(`${stream.stream}\n`);
     });
     file.end();
@@ -113,8 +123,8 @@ const exportM3U = (source, streams) => {
 const processEPG = (source, streams) => {
   return new Promise((resolve, reject) => {
     debug(`EPG-Process: ${source.name}`);
-    const xmlStream = flow(fs.createReadStream(`./imports/${source.name}.xml`));
-    const epg = fs.createWriteStream(`./exports/${source.name}.xml`);
+    const xmlStream = flow(fs.createReadStream(`${config.importFolder}/${source.name}.xml`));
+    const epg = fs.createWriteStream(`${config.exportFolder}/${source.name}.xml`);
     //
     epg.write('<?xml version="1.0" encoding="UTF-8"?>< !DOCTYPE tv SYSTEM "xmltv.dtd" ><tv>\n');
     xmlStream.on('tag:channel', (node) => {
@@ -140,19 +150,20 @@ const processEPG = (source, streams) => {
 const processSource = async (source) => {
   debug(`Source: ${source.name}`);
 
-  await getFile(source.m3u, `./imports/${source.name}.m3u`);
+  await getFile(source.m3u, `${config.importFolder}/${source.name}.m3u`);
   let streams = await processM3U(source);
   await exportM3U(source, streams);
 
-  await getFile(source.epg, `./imports/${source.name}.xml`);
-  await processEPG(source, streams.map(x => x['tvg-id']));
+  if (source.epg) {
+    await getFile(source.epg, `${config.importFolder}/${source.name}.xml`);
+    await processEPG(source, streams.map(x => x['tvg-id']));
+  }
 
   debug(`Source: ${source.name}`);
 };
 
 (async () => {
-  const sources = require('./config.json');
-  for (const source of sources) {
+  for (const source of config.sources) {
     await processSource(source);
   }
 })();
