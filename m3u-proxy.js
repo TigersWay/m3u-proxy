@@ -103,8 +103,10 @@ const processM3U = (source) => {
 const exportM3U = (source, streams) => {
   return new Promise((resolve, reject) => {
     debug(`M3U-Write: ${source.name}`);
-    if (!fs.existsSync('exports')) fs.mkdirSync('exports');
+    // Prepare destination
+    if (!fs.existsSync(`${config.exportFolder}`)) fs.mkdirSync(`${config.exportFolder}`, { recursive: true });
     const file = fs.createWriteStream(`${config.exportFolder}/${source.name}.m3u`);
+    // And export
     file.write('#EXTM3U\n');
     streams.forEach(stream => {
       file.write(`#EXTINF:-1`);
@@ -123,6 +125,7 @@ const exportM3U = (source, streams) => {
 const processEPG = (source, streams) => {
   return new Promise((resolve, reject) => {
     debug(`EPG-Process: ${source.name}`);
+    // Always M3U before EPG, so no need to check export folder
     const xmlStream = flow(fs.createReadStream(`${config.importFolder}/${source.name}.xml`));
     const epg = fs.createWriteStream(`${config.exportFolder}/${source.name}.xml`);
     //
