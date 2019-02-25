@@ -129,7 +129,7 @@ const processEPG = (source, streams) => {
     const xmlStream = flow(fs.createReadStream(`${config.importFolder}/${source.name}.xml`));
     const epg = fs.createWriteStream(`${config.exportFolder}/${source.name}.xml`);
     //
-    epg.write('<?xml version="1.0" encoding="UTF-8"?>< !DOCTYPE tv SYSTEM "xmltv.dtd" ><tv>\n');
+    epg.write('<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE tv SYSTEM "xmltv.dtd">\n<tv>\n');
     xmlStream.on('tag:channel', (node) => {
       if (streams.indexOf(node.$attrs.id) >= 0) {
         epg.write(flow.toXml(node));

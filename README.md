@@ -5,27 +5,38 @@ Download, process/simplify and serve M3U &amp; EPG files from your IPTV provider
 ## Configuration
 
 ```json
-[
-  {
+{
+  "importFolder": "./imports",
+  "exportFolder": "/var/www/html/iptv",
+  "minutesBetweenImports": "360",
+  "sources": [{
     "name": "MyProvider",
     "m3u": "http://url-of-my-stream-provider/streams.m3u",
     "epg": "http://url-of-my-guide-provider/xmltv.xml",
-    "filters": [
-      {
-        "field": "group-title",
-        "regex": "UK.*|USA.*"
-      }
-    ],
-    "transformations": [
-      {
-        "field": "tvg-name",
-        "regex": "(.*?) *: *(.*)",
-        "substitution": "$1: $2"
-      }
-    ]
-  }
-]
+    "filters": [{
+      "field": "group-title",
+      "regex": "UK .*|USA .*"
+    }],
+    "transformations": [{
+      "field": "group-title",
+      "regex": "(UK|USA).*",
+      "substitution": "$1"
+
+    }, {
+      "field": "tvg-name",
+      "regex": "(.*?) *: *(.*)",
+      "substitution": "$1: $2"
+    }]
+  }]
+}
+
 ```
+### importFolder
+
+### exportFolder
+
+### minutesBetweenImports
+
 ### name
 Filename without extension, downloadable files would then be <name>.m3u & <name>.xml
 
