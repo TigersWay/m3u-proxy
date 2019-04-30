@@ -13,7 +13,7 @@ const config = require('./config.json');
 
 
 const getFile = (url, filename) => {
-  debug(`getFile: ${filename}`);
+  debug(` ┌getFile: ${filename}`);
   return new Promise((resolve, reject) => {
     // Prepare destination
     const dirname = path.dirname(filename);
@@ -31,7 +31,7 @@ const getFile = (url, filename) => {
       response.on('end', () => {
         if (fs.existsSync(filename)) fs.unlinkSync(filename);
         fs.renameSync(filename + '.tmp', filename);
-        debug(`getFile: ${filename}`);
+        debug(` └getFile: ${filename}`);
         resolve();
       });
     });
@@ -40,17 +40,17 @@ const getFile = (url, filename) => {
 
 const M3UFilePrefix = /^#EXTM3U/;
 const M3UPrefix = /^#EXTINF/;
-const M3UFields = /^#EXTINF:-?\d+(?: ([\w-]*)="(.*?)")(?: ([\w-]*)="(.*?)")?(?: ([\w-]*)="(.*?)")?(?: ([\w-]*)="(.*?)")?(?: ([\w-]*)="(.*?)")?.*,(.*)/;
+const M3UFields = /^#EXTINF:-?\d+,?(?: *?([\w-]*)="(.*?)")(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?.*,(.*)/;
 
-const processM3U = (source) => {
+const processM3U = (source, model) => {
   return new Promise((resolve, reject) => {
-    debug(`M3U-Process: ${source.name}`);
+    debug(` ┌M3U-Process: ${source.name}${model.name}`);
     // Preparation
-    if (source.filters) {
-      for (let i = 0; i < source.filters.length; i++) source.filters[i].regex = new RegExp(source.filters[i].regex, 'i');
+    if (model.filters) {
+      for (let i = 0; i < model.filters.length; i++) model.filters[i].regex = new RegExp(model.filters[i].regex, 'i');
     }
-    if (source.transformations) {
-      for (let i = 0; i < source.transformations.length; i++) source.transformations[i].regex = new RegExp(source.transformations[i].regex, 'i');
+    if (model.transformations) {
+      for (let i = 0; i < model.transformations.length; i++) model.transformations[i].regex = new RegExp(model.transformations[i].regex, 'i');
     }
     // Loop
     const stream = byline.createStream(fs.createReadStream(`${config.importFolder}/${source.name}.m3u`, { encoding: 'utf8' }));
@@ -63,30 +63,36 @@ const processM3U = (source) => {
       } else if (line.match(M3UPrefix)) {
         // We get fields
         let matches = line.match(M3UFields);
-        for (let i = 1; i < 8; i += 2) {
-          if (matches[i]) fields[matches[i]] = matches[i + 1];
+        if (!matches) {
         }
-        if (!fields['tvg-name']) fields['tvg-name'] = matches[11].trim();
+        try {
+          for (let i = 1; i < 8; i += 2) {
+            if (matches[i]) fields[matches[i]] = matches[i + 1];
+          }
+          if (!fields['tvg-name']) fields['tvg-name'] = matches[11].trim();
+        } catch (err) {
+          console.error(line);
+        }
       } else {
         // And stream URL
         fields.stream = line;
         // Now let's check filters
         let valid;
-        if (!source.filters) {
+        if (!model.filters) {
           valid = true;
         } else {
           valid = false;
-          for (let i = 0; i < source.filters.length; i++) {
-            if (source.filters[i].regex.test(fields[source.filters[i].field])) {
+          for (let i = 0; i < model.filters.length; i++) {
+            if (model.filters[i].regex.test(fields[model.filters[i].field])) {
               valid = true;
               break;
             }
           }
         }
         // Do we need to apply transformations?
-        if (valid && source.transformations) {
-          for (let i = 0; i < source.transformations.length; i++) {
-            fields[source.transformations[i].field] = fields[source.transformations[i].field].replace(source.transformations[i].regex, source.transformations[i].substitution);
+        if (valid && model.transformations) {
+          for (let i = 0; i < model.transformations.length; i++) {
+            fields[model.transformations[i].field] = fields[model.transformations[i].field].replace(model.transformations[i].regex, model.transformations[i].substitution);
           }
         }
         if (valid) streams.push(fields);
@@ -94,18 +100,18 @@ const processM3U = (source) => {
       }
     });
     stream.on('end', () => {
-      debug(`M3U-Process: ${source.name}`);
+      debug(` └M3U-Process: ${source.name}${model.name}`);
       resolve(streams);
     });
   });
 };
 
-const exportM3U = (source, streams) => {
+const exportM3U = (source, model, streams) => {
   return new Promise((resolve, reject) => {
-    debug(`M3U-Write: ${source.name}`);
+    debug(` ┌M3U-Write: ${source.name}${model.name}`);
     // Prepare destination
     if (!fs.existsSync(`${config.exportFolder}`)) fs.mkdirSync(`${config.exportFolder}`, { recursive: true });
-    const file = fs.createWriteStream(`${config.exportFolder}/${source.name}.m3u`);
+    const file = fs.createWriteStream(`${config.exportFolder}/${source.name}${model.name}.m3u`);
     // And export
     file.write('#EXTM3U\n');
     streams.forEach(stream => {
@@ -117,14 +123,14 @@ const exportM3U = (source, streams) => {
       file.write(`${stream.stream}\n`);
     });
     file.end();
-    debug(`M3U-Write: ${source.name}`);
+    debug(` └M3U-Write: ${source.name}${model.name}`);
     resolve();
   });
 };
 
 const processEPG = (source, streams) => {
   return new Promise((resolve, reject) => {
-    debug(`EPG-Process: ${source.name}`);
+    debug(` ┌EPG-Process: ${source.name}`);
     // Always M3U before EPG, so no need to check export folder
     const xmlStream = flow(fs.createReadStream(`${config.importFolder}/${source.name}.xml`));
     const epg = fs.createWriteStream(`${config.exportFolder}/${source.name}.xml`);
@@ -144,25 +150,38 @@ const processEPG = (source, streams) => {
     });
     xmlStream.on('end', () => {
       epg.write('</tv>');
-      debug(`EPG-Process: ${source.name}`);
+      debug(` └EPG-Process: ${source.name}`);
       resolve();
     });
   });
 };
 
 const processSource = async (source) => {
-  debug(`Source: ${source.name}`);
+  debug(`┌Source: ${source.name}`);
 
-  await getFile(source.m3u, `${config.importFolder}/${source.name}.m3u`);
-  let streams = await processM3U(source);
-  await exportM3U(source, streams);
+  let streams;
 
-  if (source.epg) {
-    await getFile(source.epg, `${config.importFolder}/${source.name}.xml`);
-    await processEPG(source, streams.map(x => x['tvg-id']));
+  try {
+    await getFile(source.m3u, `${config.importFolder}/${source.name}.m3u`);
+    for (const model of source.models) {
+      streams = await processM3U(source, model);
+      await exportM3U(source, model, streams);
+    };
+  } catch (err) {
+    console.log(err);
   }
 
-  debug(`Source: ${source.name}`);
+  if (source.epg) {
+    try {
+      await getFile(source.epg, `${config.importFolder}/${source.name}.xml`);
+      streams = await processM3U(source, source.models[0]);
+      await processEPG(source, streams.map(x => x['tvg-id']));
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  debug(`└Source: ${source.name}`);
 };
 
 (async () => {

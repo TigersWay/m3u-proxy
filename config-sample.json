@@ -5,20 +5,27 @@
   "sources": [{
     "name": "MyProvider",
     "m3u": "http://url-of-my-stream-provider/streams.m3u",
-    "epg": "http://url-of-my-guide-provider/xmltv.xml",
-    "filters": [{
-      "field": "group-title",
-      "regex": "UK .*|USA .*"
-    }],
-    "transformations": [{
-      "field": "group-title",
-      "regex": "(UK|USA).*",
-      "substitution": "$1"
-
-    }, {
-      "field": "tvg-name",
-      "regex": "(.*?) *: *(.*)",
-      "substitution": "$1: $2"
-    }]
+    "models": [
+      {
+        "filters": [
+          {
+            "field": "group-title",
+            "regex": "UK .*|USA .*"
+          }
+        ],
+        "transformations": [
+          {
+            "field": "group-title",
+            "regex": "(UK|USA).*",
+            "substitution": "$1"
+          },
+          {
+            "field": "tvg-name",
+            "regex": "(.*?) *: *(.*)",
+            "substitution": "$1: $2"
+          }
+        ]
+      }
+    ]
   }]
 }

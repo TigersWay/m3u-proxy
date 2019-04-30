@@ -4,7 +4,7 @@ folder.ico
 
 # (p)npm
 node_modules/
-shrinkwrap.yaml
+pnpm-lock.yaml
 
 # Project
 imports/
