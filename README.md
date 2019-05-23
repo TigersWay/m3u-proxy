@@ -56,6 +56,6 @@ Original url the the guide/xmltv file
 ### Arguments
 You can specify a custom config.json file location by using `-c` or `--config` command line arguments
 
-`-c ~/.m3u-proxy/config.json`
+`node .\m3u-proxy.js -c ~/.m3u-proxy/config.json`
 
-`--config ~/.m3u-proxy/config.json`
+`node .\m3u-proxy.js --config ~/.m3u-proxy/config.json`
