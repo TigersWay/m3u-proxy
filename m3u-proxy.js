@@ -9,7 +9,13 @@ const flow = require('xml-flow');
 
 const debug = require('debug')('m3u-proxy');
 
-const config = require('./config.json');
+// Definitions for command line araguments
+const definitions = [{ name: 'config', alias: 'c', type: String, defaultValue: "./config.json" }];
+const cmdLineArgs = require('command-line-args');
+// Set passed arguments
+const args = cmdLineArgs(definitions);
+
+const config = require(args.config);
 
 
 const getFile = (url, filename) => {
