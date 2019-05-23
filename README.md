@@ -49,3 +49,13 @@ Original url the the guide/xmltv file
 ### filters
 
 ### transformations
+
+## Running
+`node .\m3u-proxy.js`
+
+### Arguments
+You can specify a custom config.json file location by using `-c` or `--config` command line arguments
+
+`-c ~/.m3u-proxy/config.json`
+
+`--config ~/.m3u-proxy/config.json`
