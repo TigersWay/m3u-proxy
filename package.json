@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "byline": "^5.0.0",
+    "command-line-args": "^5.1.1",
     "debug": "^4.1.1",
     "simple-get": "^3.0.3",
     "xml-flow": "^1.0.2"
