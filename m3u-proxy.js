@@ -10,7 +10,9 @@ const flow = require('xml-flow');
 const debug = require('debug')('m3u-proxy');
 
 // Definitions for command line araguments
-const definitions = [{ name: 'config', alias: 'c', type: String, defaultValue: "./config.json" }];
+const definitions = [
+  { name: 'config', alias: 'c', type: String, defaultValue: './config.json' }
+];
 const cmdLineArgs = require('command-line-args');
 // Set passed arguments
 const args = cmdLineArgs(definitions);
@@ -49,8 +51,8 @@ const M3UPrefix = /^#EXTINF/;
 const M3UFields = /^#EXTINF:-?\d+,?(?: *?([\w-]*)="(.*?)")(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?.*,(.*)/;
 
 const processM3U = (source, model) => {
+  debug(` ┌M3U-Process: ${source.name}${model.name}`);
   return new Promise((resolve, reject) => {
-    debug(` ┌M3U-Process: ${source.name}${model.name}`);
     // Preparation
     if (model.filters) {
       for (let i = 0; i < model.filters.length; i++) model.filters[i].regex = new RegExp(model.filters[i].regex, 'i');
@@ -81,7 +83,7 @@ const processM3U = (source, model) => {
         }
       } else {
         // And stream URL
-        fields.stream = line;
+        fields['stream'] = line;
         // Now let's check filters
         let valid;
         if (!model.filters) {
@@ -113,8 +115,8 @@ const processM3U = (source, model) => {
 };
 
 const exportM3U = (source, model, streams) => {
+  debug(` ┌M3U-Write: ${source.name}${model.name}`);
   return new Promise((resolve, reject) => {
-    debug(` ┌M3U-Write: ${source.name}${model.name}`);
     // Prepare destination
     if (!fs.existsSync(`${config.exportFolder}`)) fs.mkdirSync(`${config.exportFolder}`, { recursive: true });
     const file = fs.createWriteStream(`${config.exportFolder}/${source.name}${model.name}.m3u`);
@@ -126,7 +128,7 @@ const exportM3U = (source, model, streams) => {
       if (stream['tvg-name']) file.write(` tvg-name="${stream['tvg-name']}"`);
       if (stream['tvg-logo']) file.write(` tvg-logo="${stream['tvg-logo']}"`);
       file.write(` group-title="${stream['group-title']}",${stream['tvg-name']}\n`);
-      file.write(`${stream.stream}\n`);
+      file.write(`${stream['stream']}\n`);
     });
     file.end();
     debug(` └M3U-Write: ${source.name}${model.name}`);
@@ -135,8 +137,8 @@ const exportM3U = (source, model, streams) => {
 };
 
 const processEPG = (source, streams) => {
+  debug(` ┌EPG-Process: ${source.name}`);
   return new Promise((resolve, reject) => {
-    debug(` ┌EPG-Process: ${source.name}`);
     // Always M3U before EPG, so no need to check export folder
     const xmlStream = flow(fs.createReadStream(`${config.importFolder}/${source.name}.xml`));
     const epg = fs.createWriteStream(`${config.exportFolder}/${source.name}.xml`);
@@ -169,10 +171,14 @@ const processSource = async (source) => {
 
   try {
     await getFile(source.m3u, `${config.importFolder}/${source.name}.m3u`);
+    const models = [];
     for (const model of source.models) {
-      streams = await processM3U(source, model);
-      await exportM3U(source, model, streams);
+      models.push(processM3U(source, model)
+        .then(async (result) => {
+          await exportM3U(source, model, result);
+        }));
     };
+    await Promise.all(models);
   } catch (err) {
     console.log(err);
   }
@@ -191,7 +197,9 @@ const processSource = async (source) => {
 };
 
 (async () => {
+  const sources = [];
   for (const source of config.sources) {
-    await processSource(source);
+    sources.push(processSource(source));
   }
+  Promise.all(sources);
 })();

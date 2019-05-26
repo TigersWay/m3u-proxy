@@ -9,4 +9,4 @@ pnpm-lock.yaml
 # Project
 imports/
 exports/
-config.json
+config-*.json

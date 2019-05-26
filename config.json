@@ -1,0 +1,35 @@
+{
+  "importFolder": "./imports",
+  "exportFolder": "/var/www/html/iptv",
+  "minutesBetweenImports": "360",
+  "sources": [
+    {
+      "name": "MyProvider",
+      "m3u": "http://url-of-my-stream-provider/streams.m3u",
+      "models": [
+        {
+          "name": "",
+          "filters": [
+            {
+              "field": "group-title",
+              "regex": "UK .*|USA .*"
+            }
+          ],
+          "transformations": [
+            {
+              "field": "group-title",
+              "regex": "(UK|USA).*",
+              "substitution": "$1"
+            },
+            {
+              "field": "tvg-name",
+              "regex": "(.*?) *: *(.*)",
+              "substitution": "$1: $2"
+            }
+          ]
+        }
+      ],
+      "epg": "http://url-of-my-guide-provider/xmltv.xml"
+    }
+  ]
+}
