@@ -9,4 +9,6 @@ pnpm-lock.yaml
 # Project
 imports/
 exports/
+.config/
 config-*.json
+regex-help.md

@@ -1,5 +1,3 @@
-'use strict';
-
 const fs = require('fs');
 const path = require('path');
 
@@ -28,10 +26,11 @@ const getFile = (url, filename) => {
     if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
     const file = fs.createWriteStream(filename + '.tmp');
     // and download
-    get(url, (error, response) => {
+    get({ url: url, rejectUnauthorized: false }, (error, response) => {
       if (error) {
         fs.unlinkSync(filename + '.tmp');
-        reject(new Error(`[${response.statusCode}] Failed to load resource: ${url}`));
+        // reject(new Error(`Failed to load resource: ${url}`));
+        throw error;
       }
       // pipe received data
       response.pipe(file);
@@ -70,7 +69,7 @@ const processM3U = (source, model) => {
         // First line
       } else if (line.match(M3UPrefix)) {
         // We get fields
-        let matches = line.match(M3UFields);
+        const matches = line.match(M3UFields);
         if (!matches) {
         }
         try {

@@ -1,19 +1,28 @@
 {
   "name": "m3u-proxy",
-  "description": "Download, process/simplify and serve M3U & EPG files from your IPTV provider(s)",
+  "description": "Download, process/simplify M3U & EPG files from your IPTV provider(s)",
   "keywords": [
     "m3u",
     "epg",
     "xmltv",
     "nodejs"
   ],
-  "version": "0.5.0",
+  "version": "0.7.0",
+  "license": "MIT",
   "author": "Ben Michaud <ben@tigersway.net>",
   "contributors": [
     "DopeGrandpa (https://github.com/DopeGrandpa)"
   ],
-  "license": "MIT",
-  "main": "m3u-proxy.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TigersWay/m3u-proxy.git"
+  },
+  "bin": {
+    "m3u-proxy": "./m3u-proxy.js"
+  },
+  "scripts": {
+    "test": "echo \"No test specified\""
+  },
   "engines": {
     "node": ">=10"
   },
@@ -21,16 +30,16 @@
     "byline": "^5.0.0",
     "command-line-args": "^5.1.1",
     "debug": "^4.1.1",
-    "simple-get": "^3.0.3",
-    "xml-flow": "^1.0.3"
+    "simple-get": "^3.1.0",
+    "xml-flow": "^1.0.4"
   },
   "devDependencies": {
-    "eslint": "^6.1.0",
-    "eslint-config-standard": "^13.0.1",
+    "eslint": "^6.7.1",
+    "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-node": "^10.0.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.0",
-    "nodemon": "^1.19.1"
+    "eslint-plugin-standard": "^4.0.1",
+    "nodemon": "^2.0.1"
   }
 }
