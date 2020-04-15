@@ -1,6 +1,8 @@
 # m3u-proxy
 
-Download, process/simplify and serve M3U &amp; EPG files from your IPTV provider(s).
+Process/simplify and potentially serve M3U &amp; EPG files from your IPTV provider(s).
+
+![GitHub package.json version](https://img.shields.io/github/package-json/v/tigersway/m3u-proxy?style=flat-square) ![GitHub last commit](https://img.shields.io/github/last-commit/tigersway/m3u-proxy?style=flat-square)
 
 ## Configuration
 
@@ -45,8 +47,7 @@ Download, process/simplify and serve M3U &amp; EPG files from your IPTV provider
 - **importFolder**: Destination folder for all imports.
 - **exportFolder**: Destination folder for all exports.
 - **minutesBetweenImports**: Not yet available.
-- **name**: Prefix for export filenames: downloadable files are
-<name\><model\>.m3u & <name\>.xml.
+- **name**: Prefix for export filenames: downloadable files are <name\><model\>.m3u & <name\>.xml.
 - **m3u**: Original url for the M3U file.
 - **epg**: Original url the the guide/xmltv file.
 - **filters**: Combined, they Allow to select only some of the channels.
@@ -55,7 +56,7 @@ Download, process/simplify and serve M3U &amp; EPG files from your IPTV provider
 ## Running
 `node .\m3u-proxy.js`
 
-### Arguments (v0.4.0)
+### Arguments (v0.4.0+)
 You can specify a custom config.json file location by using `-c` or `--config` command line arguments
 
 `node .\m3u-proxy.js -c ~/.m3u-proxy/config.json`

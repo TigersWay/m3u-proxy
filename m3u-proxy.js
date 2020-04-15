@@ -47,7 +47,7 @@ const getFile = (url, filename) => {
 
 const M3UFilePrefix = /^#EXTM3U/;
 const M3UPrefix = /^#EXTINF/;
-const M3UFields = /^#EXTINF:-?\d+,?(?: *?([\w-]*)="(.*?)")(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?.*,(.*)/;
+const M3UFields = /^#EXTINF:-?\d+,?(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)")?.*,(.*)/;
 
 const processM3U = (source, model) => {
   debug(` ┌M3U-Process: ${source.name}${model.name}`);
@@ -77,6 +77,7 @@ const processM3U = (source, model) => {
             if (matches[i]) fields[matches[i]] = matches[i + 1];
           }
           if (!fields['tvg-name']) fields['tvg-name'] = matches[11].trim();
+          if (!fields['group-title']) fields['group-title'] = fields['tvg-name'].match(/\w*/); // Compact M3U files = no group-title
         } catch (err) {
           console.error(line);
         }
