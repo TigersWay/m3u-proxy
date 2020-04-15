@@ -1,7 +1,8 @@
 # m3u-proxy
 
 ## 0.7.1
-- Allow compact M3U files (no group-title)  
+- Allow compact M3U files (no group-title) 
+- Re-set shebang 
 
 ## 0.7.0
 - Becomes CLI
