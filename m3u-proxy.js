@@ -22,7 +22,7 @@ const config = require(args.config);
 
 const getFile = (url, filename) => {
   debug(` ┌getFile: ${filename}`);
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     // Prepare destination
     const dirname = path.dirname(filename);
     if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
@@ -53,7 +53,7 @@ const M3UFields = /^#EXTINF:-?\d+,?(?: *?([\w-]*)="(.*?)")?(?: *?([\w-]*)="(.*?)
 
 const processM3U = (source, model) => {
   debug(` ┌M3U-Process: ${source.name}${model.name}`);
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     // Preparation
     if (model.filters) {
       for (let i = 0; i < model.filters.length; i++) model.filters[i].regex = new RegExp(model.filters[i].regex, 'i');
@@ -72,8 +72,8 @@ const processM3U = (source, model) => {
       } else if (line.match(M3UPrefix)) {
         // We get fields
         const matches = line.match(M3UFields);
-        if (!matches) {
-        }
+        // if (!matches) {
+        // }
         try {
           for (let i = 1; i < 8; i += 2) {
             if (matches[i]) fields[matches[i]] = matches[i + 1];
@@ -118,7 +118,7 @@ const processM3U = (source, model) => {
 
 const exportM3U = (source, model, streams) => {
   debug(` ┌M3U-Write: ${source.name}${model.name}`);
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     // Prepare destination
     if (!fs.existsSync(`${config.exportFolder}`)) fs.mkdirSync(`${config.exportFolder}`, { recursive: true });
     const file = fs.createWriteStream(`${config.exportFolder}/${source.name}${model.name}.m3u`);
@@ -140,17 +140,19 @@ const exportM3U = (source, model, streams) => {
 
 const processEPG = (source, streams) => {
   debug(` ┌EPG-Process: ${source.name}`);
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     // Always M3U before EPG, so no need to check export folder
     const xmlStream = flow(fs.createReadStream(`${config.importFolder}/${source.name}.xml`));
     const epg = fs.createWriteStream(`${config.exportFolder}/${source.name}.xml`);
     //
     epg.write('<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE tv SYSTEM "xmltv.dtd">\n<tv>\n');
     xmlStream.on('tag:channel', (node) => {
-      if (streams.indexOf(node.$attrs.id) >= 0) {
-        epg.write(flow.toXml(node));
-        epg.write('\n');
-      }
+      try {
+        if (streams.indexOf(node.$attrs.id) >= 0) {
+          epg.write(flow.toXml(node));
+          epg.write('\n');
+        }
+      } catch (e) {} // eslint-disable-line no-empty
     });
     xmlStream.on('tag:programme', (node) => {
       if (streams.indexOf(node.$attrs.channel) >= 0) {
@@ -179,7 +181,7 @@ const processSource = async (source) => {
         .then(async (result) => {
           await exportM3U(source, model, result);
         }));
-    };
+    }
     await Promise.all(models);
   } catch (err) {
     console.log(err);

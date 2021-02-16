@@ -7,7 +7,7 @@
     "xmltv",
     "nodejs"
   ],
-  "version": "0.7.1",
+  "version": "1.0.0",
   "license": "MIT",
   "author": "Ben Michaud <ben@tigersway.net>",
   "contributors": [
@@ -21,7 +21,7 @@
     "m3u-proxy": "./m3u-proxy.js"
   },
   "scripts": {
-    "test": "echo \"No test specified\""
+    "run-it": "node m3u-proxy -c ./config-perso.json"
   },
   "engines": {
     "node": ">=10"
@@ -30,7 +30,7 @@
     "byline": "^5.0.0",
     "command-line-args": "^5.1.1",
     "debug": "^4.1.1",
-    "simple-get": "^3.1.0",
+    "simple-get": "^4.0.0",
     "xml-flow": "^1.0.4"
   }
 }
