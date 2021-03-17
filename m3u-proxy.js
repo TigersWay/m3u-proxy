@@ -14,6 +14,7 @@ const definitions = [
   { name: 'config', alias: 'c', type: String, defaultValue: './config.json' }
 ];
 const cmdLineArgs = require('command-line-args');
+// const { resolve } = require('path');
 // Set passed arguments
 const args = cmdLineArgs(definitions);
 
@@ -44,6 +45,7 @@ const getFile = (url, filename) => {
         resolve();
       });
     });
+    // resolve();
   });
 };
 
@@ -138,6 +140,13 @@ const exportM3U = (source, model, streams) => {
   });
 };
 
+const diffHours = (dtStr) => {
+  const pattern = /(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2}) ([+\-0-9]{3})(\d{2})/;
+  const dt = new Date(dtStr.replace(pattern, '$1-$2-$3 $4:$5:$6 $7:$8'));
+
+  return (dt - new Date())/1000/60/60;
+};
+
 const processEPG = (source, streams) => {
   debug(` ┌EPG-Process: ${source.name}`);
   return new Promise(resolve => {
@@ -147,17 +156,17 @@ const processEPG = (source, streams) => {
     //
     epg.write('<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE tv SYSTEM "xmltv.dtd">\n<tv>\n');
     xmlStream.on('tag:channel', (node) => {
-      try {
-        if (streams.indexOf(node.$attrs.id) >= 0) {
-          epg.write(flow.toXml(node));
-          epg.write('\n');
-        }
-      } catch (e) {} // eslint-disable-line no-empty
+      if (typeof node.$attrs !== 'undefined' && node.$attrs.id !== '' && streams.indexOf(node.$attrs.id) >= 0) {
+        epg.write(flow.toXml(node));
+        epg.write('\n');
+      }
     });
     xmlStream.on('tag:programme', (node) => {
       if (streams.indexOf(node.$attrs.channel) >= 0) {
-        epg.write(flow.toXml(node));
-        epg.write('\n');
+        if (diffHours(node.$attrs.start) < 48 && diffHours(node.$attrs.stop) > -1) {// Starts in less than 48 hours and Finishes less than 1 hour ago
+          epg.write(flow.toXml(node));
+          epg.write('\n');
+        }
       }
     });
     xmlStream.on('end', () => {
